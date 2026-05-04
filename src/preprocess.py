@@ -16,6 +16,9 @@ import numpy as np
 
 def to_grayscale(image: np.ndarray) -> np.ndarray:
     """Convert a BGR image to grayscale."""
+    if len(image.shape) == 2:
+        return image #already greyscale
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     pass
 
 
@@ -27,15 +30,28 @@ def reduce_noise(image: np.ndarray, method: str = "gaussian") -> np.ndarray:
         image: Grayscale or BGR image.
         method: 'gaussian' or 'median'.
     """
+    if method == "gaussian":
+        return cv2.GaussianBlur(image, (11,11), 0)
+    elif method == "median":
+        return cv2.medianBlur(image, 11)
+    else:
+        raise ValueError(f"Unsupported noise reduction method: {method}")
     pass
 
 
-def apply_clahe(image: np.ndarray) -> np.ndarray:
+def equalize_normalize(image: np.ndarray, method: str = "equalize") -> np.ndarray:
     """
-    Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
-    to improve contrast under varying lighting conditions.
+    Apply Histogram Equalization or normalization to enhance contrast.
     """
-    pass
+    if len(image.shape) == 3:
+        image = to_grayscale(image)
+
+    if method == "equalize":
+        return cv2.equalizeHist(image)
+    elif method == "normalize":
+        return cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
+    else:
+        raise ValueError(f"Unsupported histogram equalization method: {method}")
 
 
 def threshold_image(image: np.ndarray, method: str = "adaptive") -> np.ndarray:
@@ -46,7 +62,13 @@ def threshold_image(image: np.ndarray, method: str = "adaptive") -> np.ndarray:
         image: Grayscale image.
         method: 'global' or 'adaptive'.
     """
-    pass
+    if method == "global":
+        _, thresh = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+        return thresh
+    elif method == "adaptive":
+        return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+    else:
+        raise ValueError(f"Method must be global or adaptive")
 
 
 def morphological_operations(image: np.ndarray) -> np.ndarray:
@@ -54,7 +76,18 @@ def morphological_operations(image: np.ndarray) -> np.ndarray:
     Apply morphological operations (e.g., opening/closing) to clean up
     binary mask.
     """
-    pass
+    kernel = np.ones((5,5), np.uint8)
+    #remove noise (opening)
+    opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+    #close holes inside objects (closing)
+    closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+    return closing
+
+def edge_detection(image: np.ndarray) -> np.ndarray:
+    """
+    Apply Canny edge detection to find edges in the image.
+    """
+    return cv2.Canny(image, 50, 150)
 
 
 def preprocess(image: np.ndarray) -> np.ndarray:
@@ -62,10 +95,16 @@ def preprocess(image: np.ndarray) -> np.ndarray:
     Full preprocessing pipeline:
     1. Grayscale
     2. Noise reduction
-    3. CLAHE
-    4. Thresholding
-    5. Morphological cleanup
+    3. Histogram equalization/normalization
+    4. Morphological cleanup
 
     Returns preprocessed image ready for circle detection.
     """
-    pass
+    gray = to_grayscale(image)
+    denoised = reduce_noise(gray, method="median")
+    normalized = equalize_normalize(denoised, method="normalize")
+    # thresh = threshold_image(normalized, method="adaptive")
+    cleaned = morphological_operations(normalized)
+    edges = edge_detection(cleaned)
+
+    return edges
