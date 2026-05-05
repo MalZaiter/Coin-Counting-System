@@ -5,9 +5,8 @@ Person 1: Data & Preprocessing
 Responsibilities:
 - Grayscale conversion
 - Noise reduction (Gaussian / Median blur)
-- Histogram equalization (CLAHE)
-- Thresholding (global + adaptive)
-- Morphological operations
+- Histogram equalization/normalization
+- Edge detection (Canny)
 """
 
 import cv2
@@ -52,42 +51,52 @@ def equalize_normalize(image: np.ndarray, method: str = "equalize") -> np.ndarra
         return cv2.normalize(image, None, 0, 255, cv2.NORM_MINMAX)
     else:
         raise ValueError(f"Unsupported histogram equalization method: {method}")
+    
+# def apply_CLAHE(image: np.ndarray) -> np.ndarray:
+#     """
+#     Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to enhance contrast.
+#     """
+#     if len(image.shape) == 3:
+#         image = to_grayscale(image)
+
+#     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+#     return clahe.apply(image)
 
 
-def threshold_image(image: np.ndarray, method: str = "adaptive") -> np.ndarray:
-    """
-    Threshold a grayscale image.
+# def threshold_image(image: np.ndarray, method: str = "adaptive") -> np.ndarray:
+#     """
+#     Threshold a grayscale image.
 
-    Args:
-        image: Grayscale image.
-        method: 'global' or 'adaptive'.
-    """
-    if method == "global":
-        _, thresh = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
-        return thresh
-    elif method == "adaptive":
-        return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-    else:
-        raise ValueError(f"Method must be global or adaptive")
+#     Args:
+#         image: Grayscale image.
+#         method: 'global' or 'adaptive'.
+#     """
+#     if method == "global":
+#         _, thresh = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+#         return thresh
+#     elif method == "adaptive":
+#         return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
+#     else:
+#         raise ValueError(f"Method must be global or adaptive")
 
 
-def morphological_operations(image: np.ndarray) -> np.ndarray:
-    """
-    Apply morphological operations (e.g., opening/closing) to clean up
-    binary mask.
-    """
-    kernel = np.ones((5,5), np.uint8)
-    #remove noise (opening)
-    opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
-    #close holes inside objects (closing)
-    closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
-    return closing
+# def morphological_operations(image: np.ndarray) -> np.ndarray:
+#     """
+#     Apply morphological operations (e.g., opening/closing) to clean up
+#     binary mask.
+#     """
+#     kernel = np.ones((9,9), np.uint8)
+#     #remove noise (opening)
+#     opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+#     #close holes inside objects (closing)
+#     closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+#     return closing
 
 def edge_detection(image: np.ndarray) -> np.ndarray:
     """
     Apply Canny edge detection to find edges in the image.
     """
-    return cv2.Canny(image, 50, 150)
+    return cv2.Canny(image, 80, 140)
 
 
 def preprocess(image: np.ndarray) -> np.ndarray:
@@ -96,15 +105,15 @@ def preprocess(image: np.ndarray) -> np.ndarray:
     1. Grayscale
     2. Noise reduction
     3. Histogram equalization/normalization
-    4. Morphological cleanup
+    4. Edge detection
 
     Returns preprocessed image ready for circle detection.
     """
     gray = to_grayscale(image)
     denoised = reduce_noise(gray, method="median")
-    normalized = equalize_normalize(denoised, method="normalize")
-    # thresh = threshold_image(normalized, method="adaptive")
-    cleaned = morphological_operations(normalized)
-    edges = edge_detection(cleaned)
+    equalized = equalize_normalize(denoised, method="normalize")
+    # thresh = threshold_image(equalized, method="global")
+    # cleaned = morphological_operations(thresh)
+    edges = edge_detection(equalized)
 
     return edges
