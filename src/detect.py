@@ -60,9 +60,21 @@ def non_maximum_suppression(circles: list, overlap_thresh: float = 0.4) -> list:
     the large cluster circle is then tested and suppressed because its centre
     coincides with one of the already-kept coins (distance < threshold).
 
-    For same-coin duplicates from both pipelines (similar radii, nearby
-    centres) the smaller of the two is kept — acceptable since both are
-    good fits and the size difference is typically < 5 %.
+    Size-ratio guard (min_suppress_ratio = 0.50)
+    --------------------------------------------
+    A circle already in `keep` (call it A, smaller since ascending) may only
+    suppress the incoming circle B if r_A ≥ 0.50 × r_B.
+
+    Without this guard, a tiny spurious ring detected on a coin's text or
+    scalloped-edge detail (r ≈ 30) could be added first and then block the
+    correct full-coin circle (r ≈ 70) because their centres are within the
+    overlap threshold distance.  The 30/70 = 0.43 ratio fails the guard, so
+    both circles survive NMS; the spurious one is then removed by
+    `_remove_nested_circles` because its centre falls inside the larger circle.
+
+    Same-coin duplicates from both pipelines have radius ratio ≈ 0.9–1.0,
+    so they still suppress each other normally.
+    Cluster-enclosing circles (ratio ≈ 0.59–0.70) also still get suppressed.
     """
     if len(circles) == 0:
         return []
@@ -71,11 +83,49 @@ def non_maximum_suppression(circles: list, overlap_thresh: float = 0.4) -> list:
     for (x1, y1, r1) in circles:
         suppressed = any(
             np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) < (r1 + r2) * (1.0 - overlap_thresh)
+            and r2 >= r1 * 0.50   # size-ratio guard: tiny kept circle cannot block a much larger new one
             for (x2, y2, r2) in keep
         )
         if not suppressed:
             keep.append((x1, y1, r1))
     return keep
+
+
+def _remove_nested_circles(circles: list) -> list:
+    """
+    Remove circles whose centre lies inside any larger circle.
+
+    After NMS, spurious sub-feature detections (coin text rings, scalloped-
+    edge details) may survive alongside the correctly-sized coin circle because
+    the size-ratio guard deliberately prevented them from being suppressed.
+    Any circle A whose centre is geometrically inside a larger circle B
+    (distance(A, B) < r_B and r_A < r_B) is discarded: it is a feature of
+    coin B's interior, not a separate coin.
+
+    Examples handled
+    ----------------
+    076 — 20 ct scalloped edge: tiny r ≈ 30 circle on coin text; its centre
+          is ~45 px from the coin centre, inside the r ≈ 70 correct circle.
+          → removed.
+    085 — 2 € bimetallic double detection: two Hough circles from the silver
+          outer rim and gold inner transition ring; the smaller one's centre
+          is inside the larger.  → removed.
+
+    Genuinely separate coins are never nested: the minimum physical
+    centre-to-centre distance for non-overlapping coins is r_A + r_B, which
+    is always > r_B (the containment threshold).
+    """
+    if len(circles) <= 1:
+        return circles
+    result = []
+    for (x1, y1, r1) in circles:
+        nested = any(
+            r2 > r1 and np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2) < r2
+            for (x2, y2, r2) in circles
+        )
+        if not nested:
+            result.append((x1, y1, r1))
+    return result
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -678,7 +728,10 @@ def detect_coins(
         return []
 
     # --- Global NMS: deduplicate coins seen by both pipelines ---
-    return non_maximum_suppression(filtered, overlap_thresh=0.4)
+    deduped = non_maximum_suppression(filtered, overlap_thresh=0.4)
+
+    # --- Remove sub-feature circles nested inside larger coin circles ---
+    return _remove_nested_circles(deduped)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -729,7 +782,8 @@ def get_debug_candidates(image: np.ndarray, **kwargs) -> dict:
     hough = _hough_candidates(image, min_radius=min_radius, max_radius=max_radius)
     merged = color + hough
     filtered = filter_false_positives(image, merged) if merged else []
-    final = non_maximum_suppression(filtered, overlap_thresh=0.4) if filtered else []
+    nms      = non_maximum_suppression(filtered, overlap_thresh=0.4) if filtered else []
+    final    = _remove_nested_circles(nms) if nms else []
 
     return {
         "color":    color,
