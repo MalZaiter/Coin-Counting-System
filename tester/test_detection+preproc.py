@@ -5,13 +5,13 @@ from src.detect import detect_coins
 # Path to your dataset
 import os
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DATASET_PATH = os.path.join(BASE_DIR, "data", "raw")
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DATASET_PATH = os.path.join(BASE_DIR, "data", "complex_tests")
 
 # Optional: save results instead of just showing
 SAVE_OUTPUT = True
-OUTPUT_FOLDER = "outputs"
+OUTPUT_FOLDER = os.path.join(BASE_DIR, "complext_tests_outputs")
 
 # Set to a filename (e.g., "128.jpg") to process only that image, or None to process all
 SPECIFIC_IMAGE = None  # e.g., "128.jpg" or None
