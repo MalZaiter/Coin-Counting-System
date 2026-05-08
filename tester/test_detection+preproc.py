@@ -1,5 +1,7 @@
 import cv2
 import os
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.detect import detect_coins
 
 # Path to your dataset
