@@ -1,0 +1,469 @@
+======================================================================
+PHASE 4 RESULTS
+======================================================================
+
+
+======================================================================
+PHASE 4 CODE
+======================================================================
+"""
+tune_params_phase5.py — Background-rejection filter + param2 fine-tune
+=======================================================================
+
+Phase 4 showed the metallic ACCEPTANCE filter rejects real coins (complex
+engravings make interiors <20% "gold"-colored).
+
+New strategy — background REJECTION:
+  Instead of requiring the interior to look like a coin, we reject circles
+  whose interior is a known non-coin background color:
+    • Teal/cyan painted wood : H ∈ [70, 110],  S > 25   (fixes 011, 036)
+    • Saturated red rubber   : H ∈ [0,  10] or [160,180], S > 100  (fixes 044, 134)
+
+  These ranges cannot be confused with any euro coin (gold H≈15-28,
+  silver S<50, copper H≈8-20).
+
+Phase 4 also showed FN comes from coins not generating Hough votes at
+param2=50. Try param2 ∈ [40, 45, 50] combined with the background-reject
+filter and existing sharpness filter.
+
+Sweep grid (18 combos, ~8 min):
+  bg_reject_on : [True, False]
+  bg_min       : [0.30, 0.40, 0.50]   (fraction of interior that must be NON-background)
+  param2       : [40, 45, 50]
+
+Fixed: sh_min=1.5, arc_min=0.35, ed_min=0.08, cu_min=0.25, br_min=30.0
+
+Usage:
+    $env:PYTHONPATH="."; python tester/tune_params_phase5.py
+"""
+
+import sys
+import time
+import cv2
+import numpy as np
+from pathlib import Path
+from typing import Dict
+
+# ===========================================================================
+# CONFIGURATION
+# ===========================================================================
+
+IMAGES_DIR = Path("data/raw")
+
+GROUND_TRUTH: Dict[str, int] = {
+    "001.jpg": 3,  "002.jpg": 1,  "003.jpg": 1,  "004.jpg": 1,  "005.jpg": 1,
+    "006.jpg": 1,  "007.jpg": 3,  "008.jpg": 1,  "009.jpg": 1,  "010.jpg": 1,
+    "011.jpg": 2,  "012.jpg": 2,  "013.jpg": 1,  "014.jpg": 1,  "015.jpg": 1,
+    "016.jpg": 2,  "017.jpg": 3,  "018.jpg": 3,  "019.jpg": 1,  "020.jpg": 3,
+    "021.jpg": 1,  "022.jpg": 1,  "023.jpg": 2,  "024.jpg": 3,  "025.jpg": 3,
+    "026.jpg": 2,  "027.jpg": 5,  "028.jpg": 2,  "029.jpg": 1,  "030.jpg": 3,
+    "031.jpg": 2,  "032.jpg": 3,  "033.jpg": 1,  "034.jpg": 1,  "035.jpg": 1,
+    "036.jpg": 2,  "037.jpg": 3,  "038.jpg": 7,  "039.jpg": 2,  "040.jpg": 5,
+    "041.jpg": 1,  "042.jpg": 1,  "043.jpg": 2,  "044.jpg": 2,  "045.jpg": 3,
+    "046.jpg": 3,  "047.jpg": 3,  "048.jpg": 1,  "049.jpg": 3,  "050.jpg": 2,
+    "051.jpg": 4,  "052.jpg": 6,  "053.jpg": 1,  "054.jpg": 2,  "055.jpg": 2,
+    "056.jpg": 1,  "057.jpg": 3,  "058.jpg": 3,  "059.jpg": 2,  "060.jpg": 1,
+    "061.jpg": 1,  "062.jpg": 2,  "063.jpg": 3,  "064.jpg": 1,  "065.jpg": 1,
+    "066.jpg": 3,  "067.jpg": 2,  "068.jpg": 1,  "069.jpg": 1,  "070.jpg": 1,
+    "071.jpg": 1,  "072.jpg": 3,  "073.jpg": 3,  "074.jpg": 2,  "075.jpg": 2,
+    "076.jpg": 4,  "077.jpg": 3,  "078.jpg": 3,  "079.jpg": 5,  "080.jpg": 2,
+    "081.jpg": 1,  "082.jpg": 1,  "083.jpg": 1,  "084.jpg": 4,  "085.jpg": 5,
+    "086.jpg": 3,  "087.jpg": 1,  "088.jpg": 6,  "089.jpg": 2,  "090.jpg": 2,
+    "091.jpg": 1,  "092.jpg": 3,  "093.jpg": 1,  "094.jpg": 3,  "095.jpg": 3,
+    "096.jpg": 8,  "097.jpg": 4,  "098.jpg": 4,  "099.jpg": 1,  "100.jpg": 1,
+    "101.jpg": 3,  "102.jpg": 3,  "103.jpg": 3,  "104.jpg": 1,  "105.jpg": 1,
+    "106.jpg": 3,  "107.jpg": 1,  "108.jpg": 1,  "109.jpg": 2,  "110.jpg": 2,
+    "111.jpg": 3,  "112.jpg": 3,  "113.jpg": 1,  "114.jpg": 1,  "115.jpg": 4,
+    "116.jpg": 1,  "117.jpg": 1,  "118.jpg": 8,  "119.jpg": 1,  "120.jpg": 2,
+    "121.jpg": 4,  "122.jpg": 3,  "123.jpg": 1,  "124.jpg": 3,  "125.jpg": 2,
+    "126.jpg": 3,  "127.jpg": 2,  "128.jpg": 3,  "129.jpg": 1,  "130.jpg": 2,
+    "131.jpg": 1,  "132.jpg": 4,  "133.jpg": 3,  "134.jpg": 2,  "135.jpg": 1,
+    "136.jpg": 2,  "137.jpg": 3,  "138.jpg": 3,  "139.jpg": 2,  "140.jpg": 2,
+    "141.jpg": 1,  "142.jpg": 1,  "143.jpg": 2,  "144.jpg": 1,  "145.jpg": 1,
+    "146.jpg": 6,  "147.jpg": 1,  "148.jpg": 1,  "149.jpg": 1,  "150.jpg": 1,
+}
+
+MAX_IMAGE_DIM = 960
+PARAM1     = 40
+MIN_DIST   = 80
+ARC_MIN    = 0.35
+ED_MIN     = 0.08
+CU_MIN     = 0.25
+BR_MIN     = 30.0
+NMS_THRESH = 0.5
+RING_WIDTH = 8
+SH_MIN     = 1.5   # fixed — best from Phase 3
+
+# Sweep
+BG_REJECT_ON_VALUES = [True, False]
+BG_MIN_VALUES       = [0.30, 0.40, 0.50]
+PARAM2_VALUES       = [40, 45, 50]
+
+# ===========================================================================
+# Precomputed sampling arrays
+# ===========================================================================
+_N72 = 72
+_A72 = np.linspace(0, 2 * np.pi, _N72, endpoint=False)
+_C72 = np.cos(_A72)
+_S72 = np.sin(_A72)
+
+_FRACS = np.linspace(0.15, 0.90, 8)
+_N_DISC = 20
+_Ad = np.linspace(0, 2 * np.pi, _N_DISC, endpoint=False)
+_Cd, _Sd = np.cos(_Ad), np.sin(_Ad)
+
+_N_SEC = 36
+_A36 = np.linspace(0, 2 * np.pi, _N_SEC, endpoint=False)
+_C36, _S36 = np.cos(_A36), np.sin(_A36)
+_SEC_I = (_A36 / (2 * np.pi) * _N_SEC).astype(int) % _N_SEC
+
+# ===========================================================================
+# Filter helpers
+# ===========================================================================
+
+def _pts(cx, cy, radius, C, S, H, W):
+    xs = np.clip(np.round(cx + radius * C).astype(np.int32), 0, W - 1)
+    ys = np.clip(np.round(cy + radius * S).astype(np.int32), 0, H - 1)
+    return xs, ys
+
+
+def _nms(circles, thresh):
+    circles = sorted(circles, key=lambda c: c[2], reverse=True)
+    keep = []
+    for x1, y1, r1 in circles:
+        if all(np.hypot(x1-x2, y1-y2) >= (r1+r2)*(1-thresh) for x2,y2,r2 in keep):
+            keep.append((x1, y1, r1))
+    return keep
+
+
+def _arc(edges, cx, cy, r):
+    H, W = edges.shape
+    hit = np.zeros(_N_SEC, dtype=bool)
+    for frac in (1 - RING_WIDTH/max(r,1), 1.0, 1 + RING_WIDTH/max(r,1)):
+        xs, ys = _pts(cx, cy, r*frac, _C36, _S36, H, W)
+        hit[_SEC_I[edges[ys, xs] > 0]] = True
+    return hit.sum() / _N_SEC
+
+
+def _edge_density(edges, cx, cy, r):
+    H, W = edges.shape
+    ri, ro = max(r - RING_WIDTH, 1), r + RING_WIDTH
+    hits = tot = 0
+    for frac in np.linspace(ri/max(r,1), ro/max(r,1), 5):
+        xs, ys = _pts(cx, cy, r*frac, _C72, _S72, H, W)
+        hits += int((edges[ys, xs] > 0).sum())
+        tot  += _N72
+    return hits/tot if tot else 0.0
+
+
+def _cu(hsv, cx, cy, r):
+    H, W = hsv.shape[:2]
+    inner_r = max(int(r*0.80), 1)
+    hues, sats, vals = [], [], []
+    for frac in _FRACS:
+        xs, ys = _pts(cx, cy, inner_r*frac, _Cd, _Sd, H, W)
+        p = hsv[ys, xs]
+        hues.append(p[:,0]); sats.append(p[:,1]); vals.append(p[:,2])
+    hue = np.concatenate(hues).astype(np.float32)
+    sat = np.concatenate(sats)
+    val = np.concatenate(vals).astype(np.float32)
+    col = sat > 12
+    if col.sum() >= 10:
+        return float(1/(1 + np.std(hue[col])/30))
+    return float(1/(1 + np.std(val)/40)) if len(val) else 0.0
+
+
+def _brightness(hsv, cx, cy, r):
+    H, W = hsv.shape[:2]
+    inner_r = max(int(r*0.75), 1)
+    vals = []
+    for frac in _FRACS:
+        xs, ys = _pts(cx, cy, inner_r*frac, _Cd, _Sd, H, W)
+        vals.append(hsv[ys, xs, 2])
+    v = np.concatenate(vals).astype(np.float32)
+    return float(np.mean(v)) if len(v) else 0.0
+
+
+def _edge_density_at_r(edges, cx, cy, sample_r):
+    H, W = edges.shape
+    xs = np.clip(np.round(cx + sample_r * _C72).astype(np.int32), 0, W - 1)
+    ys = np.clip(np.round(cy + sample_r * _S72).astype(np.int32), 0, H - 1)
+    return float((edges[ys, xs] > 0).mean())
+
+
+def _ring_sharpness(edges, cx, cy, r):
+    ring  = _edge_density_at_r(edges, cx, cy, r)
+    inner = _edge_density_at_r(edges, cx, cy, max(r * 0.55, 1.0))
+    outer = _edge_density_at_r(edges, cx, cy, r * 1.55)
+    bg = (inner + outer) * 0.5
+    if bg < 1e-4:
+        return ring * 100.0
+    return ring / bg
+
+
+def _background_fraction(hsv, cx, cy, r):
+    """
+    Fraction of interior pixels that are a KNOWN NON-COIN background color.
+
+    We do NOT check if the interior looks like a coin (Phase 4 lesson: coin
+    engravings make interiors <20% 'gold'-colored even for real coins).
+
+    Instead we flag two specific background signatures that appear in the
+    problem images and are impossible to confuse with any euro coin:
+
+    Teal / cyan painted wood  (011, 036, 057, 079):
+        H ∈ [70, 110],  S > 25
+        Teal is far outside every euro coin colour (gold H≈20, silver S<50,
+        copper H≈13). A coin with any teal-coloured interior cannot be a coin.
+
+    Saturated red / deep orange rubber  (044, 103, 134):
+        (H ∈ [0, 10] OR H ∈ [160, 180])  AND  S > 100
+        Rubber-red is highly saturated (S 130-200). Gold coins are warm
+        but much lower saturation (S 50-120). Silver coins have S<50.
+
+    Returns the fraction of pixels that ARE background (higher = more likely FP).
+    If this fraction exceeds bg_min, the circle is rejected.
+    """
+    H_img, W_img = hsv.shape[:2]
+    inner_r = max(int(r * 0.75), 1)
+    mask = np.zeros((H_img, W_img), dtype=np.uint8)
+    cv2.circle(mask, (cx, cy), inner_r, 255, -1)
+
+    h = hsv[:, :, 0][mask > 0].astype(np.float32)
+    s = hsv[:, :, 1][mask > 0].astype(np.float32)
+
+    if len(h) == 0:
+        return 0.0
+
+    # Teal / cyan painted wood
+    teal = ((h >= 70) & (h <= 110)) & (s > 25)
+
+    # Saturated red rubber (OpenCV H: red wraps around 0/180)
+    red_rubber = ((h <= 10) | (h >= 160)) & (s > 100)
+
+    background = teal | red_rubber
+    return float(background.mean())
+
+
+# ===========================================================================
+# Preprocessing + cache
+# ===========================================================================
+
+def _prep(img):
+    h, s, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+    v   = cv2.createCLAHE(2.0, (8, 8)).apply(v)
+    img = cv2.cvtColor(cv2.merge((h, s, v)), cv2.COLOR_HSV2BGR)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    sm   = cv2.GaussianBlur(cv2.bilateralFilter(gray, 9, 75, 75), (7, 7), 2.0)
+    bl   = cv2.GaussianBlur(cv2.bilateralFilter(gray, 13, 90, 90), (9, 9), 2.5)
+    e    = cv2.Canny(bl, 15, 50)
+    k1   = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    k2   = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    edges = cv2.morphologyEx(cv2.dilate(e, k1, iterations=2),
+                             cv2.MORPH_CLOSE, k2, iterations=2)
+    hsv  = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    return sm, edges, hsv
+
+
+def build_cache(images_dir, gt):
+    cache = []
+    for fname, truth in gt.items():
+        path = images_dir / fname
+        if not path.exists(): print(f"  [WARN] {fname} not found"); continue
+        img = cv2.imread(str(path))
+        if img is None: print(f"  [WARN] cannot read {fname}"); continue
+        h, w = img.shape[:2]
+        sc = min(1.0, MAX_IMAGE_DIM / max(h, w))
+        if sc < 1.0:
+            img = cv2.resize(img, (int(w*sc), int(h*sc)), interpolation=cv2.INTER_AREA)
+        sm, edges, hsv = _prep(img)
+        cache.append((fname, sm, edges, hsv, sc, truth))
+        print(f"  {fname}  {img.shape[1]}x{img.shape[0]}")
+    return cache
+
+
+# ===========================================================================
+# Evaluate
+# ===========================================================================
+
+def evaluate(bg_reject_on, bg_min, param2, cache):
+    total_err = total_over = 0
+    per_image = {}
+
+    for fname, sm, edges, hsv, sc, truth in cache:
+        min_r = max(5,  int(30  * sc))
+        max_r = max(10, int(220 * sc))
+        min_d = max(10, int(MIN_DIST * sc))
+
+        raw = cv2.HoughCircles(sm, cv2.HOUGH_GRADIENT,
+                               dp=1, minDist=min_d,
+                               param1=PARAM1, param2=param2,
+                               minRadius=min_r, maxRadius=max_r)
+        circles = [] if raw is None else np.uint16(np.around(raw[0])).tolist()
+        circles = _nms(circles, NMS_THRESH)
+
+        valid = []
+        for x, y, r in circles:
+            x, y, r = int(x), int(y), int(r)
+            if _arc(edges, x, y, r)           < ARC_MIN:  continue
+            if _edge_density(edges, x, y, r)  < ED_MIN:   continue
+            if _cu(hsv, x, y, r)              < CU_MIN:   continue
+            if _brightness(hsv, x, y, r)      < BR_MIN:   continue
+            if _ring_sharpness(edges, x, y, r) < SH_MIN:  continue
+            if bg_reject_on and _background_fraction(hsv, x, y, r) >= bg_min:
+                continue
+            valid.append((x, y, r))
+
+        det = len(valid)
+        per_image[fname] = det
+        total_err  += abs(det - truth)
+        total_over += max(0, det - truth)
+
+    return total_err, total_over, per_image
+
+
+# ===========================================================================
+# Main
+# ===========================================================================
+
+def main():
+    print("=" * 68)
+    print("Coin Detection — Phase 5: background-rejection × param2 sweep")
+    print("=" * 68)
+    print(f"Fixed: sh_min={SH_MIN}  arc_min={ARC_MIN}  ed_min={ED_MIN}")
+    print(f"       cu_min={CU_MIN}  br_min={BR_MIN}\n")
+    print(f"bg_reject_on : {BG_REJECT_ON_VALUES}")
+    print(f"bg_min       : {BG_MIN_VALUES}  (fraction teal/red-rubber to reject)")
+    print(f"param2       : {PARAM2_VALUES}")
+
+    combos = [(bg, bm, p2)
+              for bg in BG_REJECT_ON_VALUES
+              for bm in BG_MIN_VALUES
+              for p2 in PARAM2_VALUES]
+    seen = set(); combos_dedup = []
+    for bg, bm, p2 in combos:
+        key = (bg, bm if bg else None, p2)
+        if key not in seen:
+            seen.add(key); combos_dedup.append((bg, bm, p2))
+    print(f"Combinations : {len(combos_dedup)}\n")
+
+    if not IMAGES_DIR.exists():
+        print(f"[ERROR] {IMAGES_DIR.resolve()}"); sys.exit(1)
+
+    print(f"Caching {len(GROUND_TRUTH)} images...")
+    t0    = time.time()
+    cache = build_cache(IMAGES_DIR, GROUND_TRUTH)
+    print(f"\n  {len(cache)} images ready in {time.time()-t0:.1f}s\n")
+
+    results = []
+    t0 = time.time()
+    for i, (bg, bm, p2) in enumerate(combos_dedup):
+        err, over, pi = evaluate(bg, bm, p2, cache)
+        results.append((err, over, bg, bm, p2, pi))
+        under   = err - over
+        elapsed = time.time() - t0
+        eta     = elapsed / (i+1) * (len(combos_dedup) - i - 1)
+        bg_label = f"bg={bg}  bg_min={bm:.2f}" if bg else "bg=False          "
+        print(f"  {bg_label}  p2={p2:3d}  error={err:4d}  over={over:3d}  "
+              f"under={under:3d}  ETA {eta/60:.1f}m", flush=True)
+
+    results.sort(key=lambda r: (r[0], r[1]))
+
+    print(f"\n{'='*68}")
+    print("TOP 10 RESULTS")
+    print(f"{'='*68}")
+    print(f"  {'bg_on':>5}  {'bg_min':>6}  {'p2':>4}  "
+          f"{'TotalErr':>8}  {'OverCnt':>7}  {'UnderCnt':>8}  {'Exact':>12}")
+    print(f"  {'-'*65}")
+
+    # Count exact for display
+    def count_exact(pi):
+        n = sum(1 for f, t in GROUND_TRUTH.items()
+                if f in pi and pi[f] == t)
+        return n
+
+    for err, over, bg, bm, p2, pi in results[:10]:
+        under  = err - over
+        exact  = count_exact(pi)
+        marker = " <- BEST" if (err, over) == (results[0][0], results[0][1]) else ""
+        bm_str = f"{bm:.2f}" if bg else "  —  "
+        print(f"  {str(bg):>5}  {bm_str:>6}  {p2:4d}  "
+              f"{err:8d}  {over:7d}  {under:8d}  "
+              f"{exact:3d}/150 ({100*exact/150:.0f}%){marker}")
+
+    best_err, best_over, best_bg, best_bm, best_p2, best_pi = results[0]
+    best_under = best_err - best_over
+    best_exact = count_exact(best_pi)
+
+    print(f"\n{'='*68}")
+    print(f"RANK-1  bg_reject={best_bg}  bg_min={best_bm}  param2={best_p2}")
+    print(f"        error={best_err}  over={best_over}  under={best_under}"
+          f"  exact={best_exact}/150 ({100*best_exact/150:.0f}%)")
+    print(f"{'='*68}")
+
+    n_imgs = n_exact = 0
+    worst = []
+    for fname, truth in GROUND_TRUTH.items():
+        if fname not in best_pi: continue
+        det  = best_pi[fname]
+        diff = det - truth
+        flag = "✓" if diff == 0 else ("↑" if diff > 0 else "↓")
+        print(f"  {flag} {fname:<12}  det={det:2d}  truth={truth}  {diff:+d}")
+        n_imgs += 1
+        if diff == 0: n_exact += 1
+        else: worst.append((fname, det, truth, diff))
+
+    acc = 100*n_exact/n_imgs if n_imgs else 0
+    print(f"\n  Exact: {n_exact}/{n_imgs}  ({acc:.0f}%)")
+
+    if worst:
+        print(f"\n  Remaining misses:")
+        for fname, det, truth, diff in sorted(worst, key=lambda x: -abs(x[3])):
+            print(f"    {fname}  det={det}  truth={truth}  {diff:+d}")
+
+    # Focus on previous problem images
+    print(f"\n{'='*68}")
+    print("FOCUS — how previously failing images moved")
+    print(f"{'='*68}")
+    phase3 = {
+        "011.jpg": (6,2), "036.jpg": (6,2), "044.jpg": (5,2), "134.jpg": (3,2),
+        "085.jpg": (1,5), "040.jpg": (2,5), "043.jpg": (0,2), "136.jpg": (0,2),
+        "024.jpg": (2,3), "027.jpg": (4,5), "047.jpg": (2,3),
+        "081.jpg": (0,1), "132.jpg": (3,4),
+    }
+    for fname, (p3_det, truth) in sorted(phase3.items()):
+        p3_diff = p3_det - truth
+        p5_det  = best_pi.get(fname, -1)
+        p5_diff = p5_det - truth if p5_det >= 0 else 999
+        if p5_diff == 0:
+            status = "FIXED  "
+        elif abs(p5_diff) < abs(p3_diff):
+            status = "better "
+        elif abs(p5_diff) > abs(p3_diff):
+            status = "WORSE  "
+        else:
+            status = "same   "
+        print(f"  {status}  {fname}  truth={truth}  "
+              f"Phase3 det={p3_det}({p3_diff:+d})  Phase5 det={p5_det}({p5_diff:+d})")
+
+    print(f"\n{'='*68}")
+    print("PASTE INTO detect.py")
+    print(f"{'='*68}")
+    print(f"""
+# HoughCircles:
+param2 = {best_p2}
+
+# filter_false_positives() parameters (add bg_reject after sharpness check):
+ring_sharpness_min    = {SH_MIN}
+bg_reject_enabled     = {best_bg}
+bg_fraction_max       = {best_bm if best_bg else 'N/A'}
+
+# Background rejection hue ranges (if bg_reject_enabled):
+#   teal  = H ∈ [70, 110] and S > 25
+#   red   = (H <= 10 or H >= 160) and S > 100
+#   reject circle if fraction of interior pixels matching either >= bg_fraction_max
+""")
+
+
+if __name__ == "__main__":
+    main()
