@@ -7,7 +7,7 @@ import os
 
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DATASET_PATH = os.path.join(BASE_DIR, "data", "complex_tests")
+DATASET_PATH = os.path.join(BASE_DIR, "archive data", "complex_tests")
 
 # Optional: save results instead of just showing
 SAVE_OUTPUT = True

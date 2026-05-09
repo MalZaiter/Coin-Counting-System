@@ -21,7 +21,7 @@ from src.features import extract_features
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_ROOT = ROOT / "features_extracted"
-FOLDERS = [("raw", ROOT / "data" / "raw"), ("complex_tests", ROOT / "data" / "complex_tests")]
+FOLDERS = [("raw", ROOT / "archive data" / "raw"), ("complex_tests", ROOT / "archive data" / "complex_tests")]
 
 EXPECTED_FEATURE_LEN = 59
 
