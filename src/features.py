@@ -68,7 +68,21 @@ def extract_color_features(image_roi: np.ndarray) -> dict:
     Returns:
         Dict with keys: hsv_mean (array), color_histogram (array)
     """
-    if image_roi.ndim < 3 or image_roi.size == 0:
+    if image_roi.size == 0:
+        return {
+            "hsv_mean": np.zeros(3, dtype=np.float32),
+            "color_histogram": np.zeros(48, dtype=np.float32),
+        }
+    
+    # Handle grayscale or single-channel images
+    if image_roi.ndim == 2 or (image_roi.ndim == 3 and image_roi.shape[2] == 1):
+        # Convert grayscale to BGR
+        if image_roi.ndim == 3 and image_roi.shape[2] == 1:
+            image_roi = image_roi[:, :, 0]  # Remove extra dimension
+        image_roi = cv2.cvtColor(image_roi, cv2.COLOR_GRAY2BGR)
+    
+    if image_roi.ndim != 3 or image_roi.shape[2] != 3:
+        # Fallback for unexpected formats
         return {
             "hsv_mean": np.zeros(3, dtype=np.float32),
             "color_histogram": np.zeros(48, dtype=np.float32),

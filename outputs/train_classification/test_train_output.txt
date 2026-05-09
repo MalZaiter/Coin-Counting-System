@@ -1,0 +1,46 @@
+
+======================================================================
+TRAIN + CLASSIFICATION TEST
+======================================================================
+
+[1/3] Training model...
+
+[2/3] Loading trained model artifacts...
+
+[3/3] Classifying detected coins in complex test images...
+  [OK] 028.jpg: 2 detected -> {'2cent': 1, '1euro': 1} | value=1.02 EUR
+  [OK] 044.jpg: 2 detected -> {'1euro': 2} | value=2.00 EUR
+  [OK] 052.jpg: 6 detected -> {'20cent': 3, '5cent': 1, '10cent': 1, '50cent': 1} | value=1.25 EUR
+  [OK] 057.jpg: 3 detected -> {'10cent': 2, '2euro': 1} | value=2.20 EUR
+  [OK] 103.jpg: 3 detected -> {'10cent': 2, '5cent': 1} | value=0.25 EUR
+  [OK] 118.jpg: 7 detected -> {'1cent': 2, '10cent': 1, '5cent': 1, '1euro': 1, '20cent': 2} | value=1.57 EUR
+  [OK] 132.jpg: 4 detected -> {'20cent': 4} | value=0.80 EUR
+  [OK] test (1).jpg: 3 detected -> {'1euro': 3} | value=3.00 EUR
+  [OK] test (10).jpg: 7 detected -> {'5cent': 4, '10cent': 2, '1euro': 1} | value=1.40 EUR
+  [OK] test (11).jpg: 3 detected -> {'5cent': 1, '50cent': 1, '1euro': 1} | value=1.55 EUR
+  [OK] test (12).jpg: 3 detected -> {'1euro': 3} | value=3.00 EUR
+  [OK] test (13).jpg: 3 detected -> {'5cent': 1, '1euro': 2} | value=2.05 EUR
+  [OK] test (14).jpg: 3 detected -> {'1euro': 3} | value=3.00 EUR
+  [OK] test (15).jpg: 3 detected -> {'5cent': 1, '20cent': 1, '1euro': 1} | value=1.25 EUR
+  [OK] test (16).jpg: 3 detected -> {'1euro': 3} | value=3.00 EUR
+  [OK] test (2).jpg: 10 detected -> {'1euro': 7, '5cent': 1, '2euro': 1, '50cent': 1} | value=9.55 EUR
+  [OK] test (3).jpg: 3 detected -> {'1euro': 3} | value=3.00 EUR
+  [OK] test (5).jpg: 4 detected -> {'1euro': 4} | value=4.00 EUR
+  [OK] test (6).jpg: 11 detected -> {'20cent': 11} | value=2.20 EUR
+  [OK] test (8).jpg: 8 detected -> {'1euro': 8} | value=8.00 EUR
+  [OK] test (9).jpg: 6 detected -> {'1euro': 6} | value=6.00 EUR
+
+======================================================================
+RESULT SUMMARY
+======================================================================
+Model type: svm
+Train/Test Accuracy: 0.7704
+Images processed: 21
+Detected coins: 97
+Predicted class counts: {'2cent': 1, '1euro': 49, '20cent': 21, '5cent': 11, '10cent': 8, '50cent': 3, '2euro': 2, '1cent': 2}
+Total predicted value: 60.09 EUR
+Annotated outputs: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\outputs\train_classification
+Prediction CSV: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\outputs\train_classification\predictions.csv
+Log file: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\outputs\train_classification\test_train_output.txt
+======================================================================
+

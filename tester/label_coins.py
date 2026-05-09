@@ -14,11 +14,12 @@ import sys
 import cv2
 import numpy as np
 
+# Add project root to Python path
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 from src.utils import list_images, load_image, crop_roi
 from src.detect import detect_coins
-
-
-ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "raw"
 LABELS_FILE = ROOT / "data" / "labels.csv"
 WINDOW_SIZE = 400  # Display size for cropped circles

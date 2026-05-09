@@ -20,7 +20,16 @@ def load_model(model_path: str, scaler_path: str = None):
     Returns:
         (model, scaler) tuple. scaler may be None.
     """
-    pass
+    import joblib
+
+    model = joblib.load(model_path)
+    scaler = None
+    if scaler_path:
+        try:
+            scaler = joblib.load(scaler_path)
+        except Exception:
+            scaler = None
+    return model, scaler
 
 
 def predict_coin(feature_vector: np.ndarray, model, scaler=None) -> str:
@@ -30,7 +39,28 @@ def predict_coin(feature_vector: np.ndarray, model, scaler=None) -> str:
     Returns:
         Predicted label string (e.g., 'quarter', 'dime').
     """
-    pass
+    if feature_vector is None:
+        return "unknown"
+    fv = np.array(feature_vector)
+    if fv.ndim == 1:
+        fv = fv.reshape(1, -1)
+    if scaler is not None:
+        try:
+            fv = scaler.transform(fv)
+        except Exception:
+            pass
+    # Reject low-confidence predictions when probabilities are available.
+    if hasattr(model, 'predict_proba'):
+        try:
+            proba = model.predict_proba(fv)
+            if proba is not None and len(proba) > 0:
+                max_conf = float(np.max(proba[0]))
+                if max_conf < 0.5:
+                    return "unknown"
+        except Exception:
+            pass
+    pred = model.predict(fv)
+    return str(pred[0])
 
 
 def draw_results(image: np.ndarray, coins: list, labels: list) -> np.ndarray:
@@ -45,7 +75,19 @@ def draw_results(image: np.ndarray, coins: list, labels: list) -> np.ndarray:
     Returns:
         Annotated image.
     """
-    pass
+    out = image.copy()
+    color = (0, 200, 0)
+    text_color = (255, 255, 255)
+    for i, c in enumerate(coins):
+        try:
+            x, y, r = map(int, c)
+        except Exception:
+            continue
+        cv2.circle(out, (x, y), r, color, 2)
+        lbl = labels[i] if i < len(labels) else "?"
+        text = f"{lbl}"
+        cv2.putText(out, text, (x - r, y - r - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2, cv2.LINE_AA)
+    return out
 
 
 def count_coins(labels: list) -> dict:
@@ -55,7 +97,9 @@ def count_coins(labels: list) -> dict:
     Returns:
         Dict mapping coin label -> count (e.g., {'quarter': 3, 'dime': 2}).
     """
-    pass
+    from collections import Counter
+
+    return dict(Counter(labels))
 
 
 def compute_total_value(label_counts: dict) -> float:
@@ -65,7 +109,22 @@ def compute_total_value(label_counts: dict) -> float:
     Returns:
         Total value in dollars (float).
     """
-    pass
+    # Euro coin values aligned with classifier labels.
+    coin_values = {
+        '1cent': 0.01,
+        '2cent': 0.02,
+        '5cent': 0.05,
+        '10cent': 0.10,
+        '20cent': 0.20,
+        '50cent': 0.50,
+        '1euro': 1.00,
+        '2euro': 2.00
+    }
+    total = 0.0
+    for label, count in label_counts.items():
+        val = coin_values.get(label, 0.0)
+        total += val * count
+    return total
 
 
 def predict(image_path: str, model_path: str, scaler_path: str = None) -> dict:
@@ -80,4 +139,50 @@ def predict(image_path: str, model_path: str, scaler_path: str = None) -> dict:
     Returns:
         Dict with keys: annotated_image, label_counts, total_value
     """
-    pass
+    # Load model
+    model, scaler = load_model(model_path, scaler_path)
+
+    # Read image (ensure BGR)
+    image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f"Image not found: {image_path}")
+    
+    # Ensure image is BGR (3 channels) for color feature extraction
+    if len(image.shape) == 2:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+    coins = []
+    labels = []
+
+    # Use project modules for preprocessing, detection, and feature extraction
+    from src.preprocess import preprocess
+    from src.detect import detect_coins
+    from src.features import extract_features
+
+    img_proc = preprocess(image)
+    # detect_coins performs its own preprocessing internally.
+    coins = detect_coins(image)
+
+    # Extract features from original image (not preprocessed)
+    for c in coins:
+        try:
+            fv = extract_features(image, c)
+            if fv is not None and len(fv) > 0:
+                labels.append(predict_coin(fv, model, scaler))
+            else:
+                labels.append('unknown')
+        except Exception as e:
+            print(f"Warning: Error extracting features for coin {c}: {e}")
+            labels.append('unknown')
+
+    label_counts = count_coins(labels)
+    total_value = compute_total_value(label_counts)
+    annotated = draw_results(image, coins, labels)
+
+    return {
+        'annotated_image': annotated,
+        'label_counts': label_counts,
+        'total_value': total_value,
+        'coins': coins,
+        'labels': labels
+    }

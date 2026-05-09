@@ -14,12 +14,13 @@ import sys
 import cv2
 import numpy as np
 
+# Add project root to Python path
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 from src.utils import list_images, load_image
 from src.detect import detect_coins
 from src.features import extract_features
-
-
-ROOT = Path(__file__).resolve().parents[1]
 OUT_ROOT = ROOT / "features_extracted"
 FOLDERS = [("raw", ROOT / "archive data" / "raw"), ("complex_tests", ROOT / "archive data" / "complex_tests")]
 
