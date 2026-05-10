@@ -1,10 +1,16 @@
 
 
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import cv2
 from src.utils import load_image, show_image
 from src.preprocess import to_grayscale, reduce_noise, enhance_contrast, threshold_image, morphological_operations, connected_component_filter, edge_detection, preprocess
 
-IMAGE_PATH = "data/raw/128.jpg"
+IMAGE_PATH = "data/raw/023.jpg"
 
 def main():
   img = load_image(IMAGE_PATH)

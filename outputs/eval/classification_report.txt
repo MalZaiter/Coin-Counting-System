@@ -1,0 +1,29 @@
+Accuracy: 0.8244
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      10cent       0.69      0.84      0.76        64
+       1cent       0.80      0.68      0.74        82
+       1euro       0.94      0.94      0.94       102
+      20cent       0.69      0.86      0.77       100
+       2cent       0.82      0.90      0.86       102
+       2euro       1.00      0.96      0.98        56
+      50cent       1.00      0.26      0.41        54
+       5cent       0.86      0.91      0.89       112
+
+    accuracy                           0.82       672
+   macro avg       0.85      0.80      0.79       672
+weighted avg       0.84      0.82      0.81       672
+
+
+Confusion Matrix (rows=true, cols=pred)
+,10cent,1cent,1euro,20cent,2cent,2euro,50cent,5cent
+10cent,54,2,0,6,0,0,0,2
+1cent,0,56,0,0,18,0,0,8
+1euro,6,0,96,0,0,0,0,0
+20cent,10,0,0,86,0,0,0,4
+2cent,2,6,2,0,92,0,0,0
+2euro,0,0,2,0,0,54,0,0
+50cent,6,0,0,32,0,0,14,2
+5cent,0,6,2,0,2,0,0,102

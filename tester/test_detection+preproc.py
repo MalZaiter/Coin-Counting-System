@@ -1,23 +1,40 @@
+import sys
+from pathlib import Path
+
 import cv2
 import os
+
+# Add project root to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from src.detect import detect_coins
 
 # Path to your dataset
 import os
 
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DATASET_PATH = os.path.join(BASE_DIR, "data", "raw")
+DATASET_PATH = os.path.join(BASE_DIR, "archive data", "complex_tests")
 
 # Optional: save results instead of just showing
 SAVE_OUTPUT = True
-OUTPUT_FOLDER = "outputs"
+OUTPUT_FOLDER = os.path.join(BASE_DIR, "complext_tests_outputs")
+
+# Set to a filename (e.g., "128.jpg") to process only that image, or None to process all
+SPECIFIC_IMAGE = None  # e.g., "128.jpg" or None
 
 if SAVE_OUTPUT and not os.path.exists(OUTPUT_FOLDER):
     os.makedirs(OUTPUT_FOLDER)
 
 
 def main():
-    image_files = sorted([f for f in os.listdir(DATASET_PATH) if f.endswith(".jpg")])
+    if SPECIFIC_IMAGE:
+        image_files = [SPECIFIC_IMAGE] if os.path.exists(os.path.join(DATASET_PATH, SPECIFIC_IMAGE)) else []
+        if not image_files:
+            print(f"❌ Image {SPECIFIC_IMAGE} not found in dataset folder")
+            return
+    else:
+        image_files = sorted([f for f in os.listdir(DATASET_PATH) if f.endswith(".jpg")])
 
     if not image_files:
         print("❌ No images found in dataset folder")

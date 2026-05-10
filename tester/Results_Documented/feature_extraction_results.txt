@@ -1,0 +1,245 @@
+======================================================================
+FEATURE EXTRACTION TEST RESULTS
+======================================================================
+Generated: 2026-05-08 23:07:24
+
+SCRIPT OUTPUT:
+----------------------------------------------------------------------
+
+============================================================
+TESTING FEATURE EXTRACTION
+============================================================
+
+============================================================
+Processing raw folder: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\data\raw
+============================================================
+  [OK] 001.jpg - 3 circle(s)
+  [OK] 002.jpg - 1 circle(s)
+  [OK] 003.jpg - 1 circle(s)
+  [OK] 004.jpg - 1 circle(s)
+  [OK] 005.jpg - 1 circle(s)
+  [OK] 006.jpg - 1 circle(s)
+  [OK] 007.jpg - 3 circle(s)
+  [OK] 008.jpg - 1 circle(s)
+  [OK] 009.jpg - 1 circle(s)
+  [OK] 010.jpg - 1 circle(s)
+  [OK] 011.jpg - 11 circle(s)
+  [OK] 012.jpg - 2 circle(s)
+  [-] 013.jpg - no circles detected
+  [OK] 014.jpg - 1 circle(s)
+  [OK] 015.jpg - 1 circle(s)
+  [OK] 016.jpg - 2 circle(s)
+  [OK] 017.jpg - 3 circle(s)
+  [OK] 018.jpg - 3 circle(s)
+  [OK] 019.jpg - 1 circle(s)
+  [OK] 020.jpg - 3 circle(s)
+  [OK] 021.jpg - 1 circle(s)
+  [OK] 022.jpg - 1 circle(s)
+  [OK] 023.jpg - 2 circle(s)
+  [OK] 024.jpg - 3 circle(s)
+  [OK] 025.jpg - 3 circle(s)
+  [OK] 026.jpg - 2 circle(s)
+  [OK] 027.jpg - 5 circle(s)
+  [OK] 028.jpg - 2 circle(s)
+  [OK] 029.jpg - 1 circle(s)
+  [OK] 030.jpg - 3 circle(s)
+  [OK] 031.jpg - 2 circle(s)
+  [OK] 032.jpg - 3 circle(s)
+  [OK] 033.jpg - 1 circle(s)
+  [OK] 034.jpg - 1 circle(s)
+  [OK] 035.jpg - 1 circle(s)
+  [OK] 036.jpg - 1 circle(s)
+  [OK] 037.jpg - 3 circle(s)
+  [OK] 038.jpg - 7 circle(s)
+  [OK] 039.jpg - 2 circle(s)
+  [OK] 040.jpg - 5 circle(s)
+  [OK] 041.jpg - 1 circle(s)
+  [OK] 042.jpg - 1 circle(s)
+  [OK] 043.jpg - 2 circle(s)
+  [OK] 044.jpg - 2 circle(s)
+  [OK] 045.jpg - 3 circle(s)
+  [OK] 046.jpg - 3 circle(s)
+  [OK] 047.jpg - 3 circle(s)
+  [OK] 048.jpg - 1 circle(s)
+  [OK] 049.jpg - 2 circle(s)
+  [OK] 050.jpg - 2 circle(s)
+  [OK] 051.jpg - 4 circle(s)
+  [OK] 052.jpg - 6 circle(s)
+  [OK] 053.jpg - 1 circle(s)
+  [OK] 054.jpg - 2 circle(s)
+  [OK] 055.jpg - 14 circle(s)
+  [OK] 056.jpg - 1 circle(s)
+  [OK] 057.jpg - 3 circle(s)
+  [OK] 058.jpg - 3 circle(s)
+  [OK] 059.jpg - 2 circle(s)
+  [OK] 060.jpg - 1 circle(s)
+  [OK] 061.jpg - 1 circle(s)
+  [OK] 062.jpg - 2 circle(s)
+  [OK] 063.jpg - 3 circle(s)
+  [OK] 064.jpg - 1 circle(s)
+  [OK] 065.jpg - 1 circle(s)
+  [OK] 066.jpg - 3 circle(s)
+  [OK] 067.jpg - 2 circle(s)
+  [-] 068.jpg - no circles detected
+  [OK] 069.jpg - 1 circle(s)
+  [OK] 070.jpg - 1 circle(s)
+  [OK] 071.jpg - 1 circle(s)
+  [OK] 072.jpg - 3 circle(s)
+  [OK] 073.jpg - 3 circle(s)
+  [OK] 074.jpg - 2 circle(s)
+  [OK] 075.jpg - 1 circle(s)
+  [OK] 076.jpg - 4 circle(s)
+  [OK] 077.jpg - 2 circle(s)
+  [OK] 078.jpg - 2 circle(s)
+  [OK] 079.jpg - 4 circle(s)
+  [OK] 080.jpg - 2 circle(s)
+  [OK] 081.jpg - 1 circle(s)
+  [OK] 082.jpg - 1 circle(s)
+  [OK] 083.jpg - 1 circle(s)
+  [OK] 084.jpg - 4 circle(s)
+  [OK] 085.jpg - 5 circle(s)
+  [OK] 086.jpg - 3 circle(s)
+  [OK] 087.jpg - 1 circle(s)
+  [OK] 088.jpg - 6 circle(s)
+  [OK] 089.jpg - 2 circle(s)
+  [OK] 090.jpg - 2 circle(s)
+  [OK] 091.jpg - 1 circle(s)
+  [OK] 092.jpg - 3 circle(s)
+  [OK] 093.jpg - 1 circle(s)
+  [OK] 094.jpg - 3 circle(s)
+  [OK] 095.jpg - 3 circle(s)
+  [OK] 096.jpg - 8 circle(s)
+  [OK] 097.jpg - 3 circle(s)
+  [OK] 098.jpg - 4 circle(s)
+  [OK] 099.jpg - 1 circle(s)
+  [OK] 100.jpg - 1 circle(s)
+  [OK] 101.jpg - 3 circle(s)
+  [OK] 102.jpg - 3 circle(s)
+  [OK] 103.jpg - 3 circle(s)
+  [OK] 104.jpg - 1 circle(s)
+  [OK] 105.jpg - 1 circle(s)
+  [OK] 106.jpg - 3 circle(s)
+  [OK] 107.jpg - 1 circle(s)
+  [OK] 108.jpg - 1 circle(s)
+  [OK] 109.jpg - 2 circle(s)
+  [OK] 110.jpg - 2 circle(s)
+  [OK] 111.jpg - 3 circle(s)
+  [OK] 112.jpg - 3 circle(s)
+  [OK] 113.jpg - 1 circle(s)
+  [OK] 114.jpg - 1 circle(s)
+  [OK] 115.jpg - 4 circle(s)
+  [-] 116.jpg - no circles detected
+  [OK] 117.jpg - 1 circle(s)
+  [OK] 118.jpg - 7 circle(s)
+  [OK] 119.jpg - 1 circle(s)
+  [OK] 120.jpg - 2 circle(s)
+  [OK] 121.jpg - 4 circle(s)
+  [OK] 122.jpg - 3 circle(s)
+  [OK] 123.jpg - 1 circle(s)
+  [OK] 124.jpg - 3 circle(s)
+  [OK] 125.jpg - 2 circle(s)
+  [OK] 126.jpg - 3 circle(s)
+  [OK] 127.jpg - 2 circle(s)
+  [OK] 128.jpg - 3 circle(s)
+  [OK] 129.jpg - 1 circle(s)
+  [OK] 130.jpg - 1 circle(s)
+  [OK] 131.jpg - 1 circle(s)
+  [OK] 132.jpg - 4 circle(s)
+  [OK] 133.jpg - 3 circle(s)
+  [OK] 134.jpg - 2 circle(s)
+  [OK] 135.jpg - 1 circle(s)
+  [OK] 136.jpg - 2 circle(s)
+  [OK] 137.jpg - 3 circle(s)
+  [OK] 138.jpg - 3 circle(s)
+  [OK] 139.jpg - 2 circle(s)
+  [OK] 140.jpg - 2 circle(s)
+  [OK] 141.jpg - 1 circle(s)
+  [OK] 142.jpg - 1 circle(s)
+  [OK] 143.jpg - 2 circle(s)
+  [OK] 144.jpg - 1 circle(s)
+  [OK] 145.jpg - 1 circle(s)
+  [OK] 146.jpg - 6 circle(s)
+  [OK] 147.jpg - 1 circle(s)
+  [OK] 148.jpg - 1 circle(s)
+  [OK] 149.jpg - 1 circle(s)
+  [OK] 150.jpg - 1 circle(s)
+
+RAW Summary:
+  Processed: 150
+  Detections: 345
+  Skipped: 0
+
+============================================================
+Processing complex_tests folder: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\data\complex_tests
+============================================================
+  [OK] 028.jpg - 2 circle(s)
+  [OK] 044.jpg - 2 circle(s)
+  [OK] 052.jpg - 6 circle(s)
+  [OK] 057.jpg - 3 circle(s)
+  [OK] 103.jpg - 3 circle(s)
+  [OK] 118.jpg - 7 circle(s)
+  [OK] 132.jpg - 4 circle(s)
+  [OK] test (1).jpg - 3 circle(s)
+  [OK] test (10).jpg - 7 circle(s)
+  [OK] test (11).jpg - 3 circle(s)
+  [OK] test (12).jpg - 3 circle(s)
+  [OK] test (13).jpg - 3 circle(s)
+  [OK] test (14).jpg - 3 circle(s)
+  [OK] test (15).jpg - 3 circle(s)
+  [OK] test (16).jpg - 3 circle(s)
+  [OK] test (2).jpg - 10 circle(s)
+  [OK] test (3).jpg - 3 circle(s)
+  [OK] test (5).jpg - 4 circle(s)
+  [OK] test (6).jpg - 11 circle(s)
+  [OK] test (8).jpg - 8 circle(s)
+  [OK] test (9).jpg - 6 circle(s)
+
+COMPLEX_TESTS Summary:
+  Processed: 21
+  Detections: 97
+  Skipped: 0
+
+============================================================
+EXTRACTION COMPLETE
+============================================================
+  Total Images Processed: 171
+  Total Detections: 442
+  Total Skipped: 0
+  Annotated Images: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\features_extracted
+  CSV Exports: C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\features_extracted/raw.csv, C:\Users\Noura\Desktop\ASU UNI TORTURE HELL FIRE\Senior 1\Sem 8\CV\Project\Coin-Counting-System\features_extracted/complex_tests.csv
+
+Sample features from raw (up to 5):
+  001.jpg @ (413,644,r=65): [65, 1.327e+04, 408.4, 0.9856, 1, 0.9955, 7.852, 151.5, 85.92, 0.9867, ...]
+  001.jpg @ (269,508,r=74): [74, 1.72e+04, 465, 0.9956, 1, 0.9997, 9.222, 141.9, 78.59, 0.9679, ...]
+  001.jpg @ (425,478,r=83): [83, 2.164e+04, 521.5, 0.9935, 1, 0.9987, 8.768, 134.1, 131.3, 0.8526, ...]
+  002.jpg @ (350,403,r=71): [71, 1.584e+04, 446.1, 0.9965, 1, 1, 12.37, 152.4, 108.2, 0.3583, ...]
+  003.jpg @ (326,394,r=67): [67, 1.41e+04, 421, 0.9924, 1, 0.9979, 7.094, 137.6, 101.4, 0.9983, ...]
+
+Sample features from complex_tests (up to 5):
+  028.jpg @ (302,569,r=74): [74, 1.72e+04, 465, 0.9956, 1, 0.9997, 11.29, 142, 97.33, 0.5505, ...]
+  028.jpg @ (430,526,r=88): [88, 2.433e+04, 552.9, 0.9968, 1, 1, 16.06, 78.75, 98.56, 0.06418, ...]
+  044.jpg @ (389,739,r=74): [74, 1.72e+04, 465, 0.9956, 1, 0.9997, 17.89, 88.32, 235.2, 0.0007389, ...]
+  044.jpg @ (298,590,r=94): [94, 2.776e+04, 590.6, 0.9979, 1, 1, 16.22, 71.88, 226.4, 0.02014, ...]
+  052.jpg @ (155,430,r=76): [76, 1.815e+04, 477.5, 0.9974, 1, 0.9998, 26.78, 107.2, 137.9, 0.001221, ...]
+
+
+----------------------------------------------------------------------
+
+EXECUTION SUMMARY:
+----------------------------------------------------------------------
+Return Code: 0
+Status: SUCCESS
+
+OUTPUT ARTIFACTS:
+----------------------------------------------------------------------
+- features_extracted\complex_tests.csv
+- features_extracted\raw.csv
+- features_extracted\complex_tests/ (21 annotated images)
+- features_extracted\raw/ (150 annotated images)
+
+NOTES:
+----------------------------------------------------------------------
+- Feature extraction validates feature vector length and NaN values
+- Annotated images show detected circles with center points and labels
+- CSV files contain all extracted features for each detected circle
+- Both raw and complex_tests folders are processed
