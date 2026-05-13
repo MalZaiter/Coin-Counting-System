@@ -340,40 +340,27 @@ def detect_coins(
     return _remove_nested_circles(merged, proximity_ratio=0.60)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Diagnostic helpers
-# ──────────────────────────────────────────────────────────────────────────────
+def visualize_detections(image: np.ndarray, circles: list, circle_color: tuple = (0, 255, 0), 
+                         circle_thickness: int = 2) -> np.ndarray:
+    """
+    Draw detected coin circles on an image.
 
-def get_debug_candidates(image: np.ndarray, **kwargs) -> dict:
-    from src.preprocess import compute_background_edge_density
+    Args:
+        image: Original BGR image.
+        circles: List of (x, y, radius) tuples.
+        circle_color: BGR color for circle outline (default green).
+        circle_thickness: Thickness of circle outline.
 
-    border_px  = kwargs.get("border_px", 60)
-    min_radius = kwargs.get("min_radius", 25)
-    max_radius = kwargs.get("max_radius", 250)
+    Returns:
+        Annotated image with circles drawn.
+    """
+    out = image.copy()
+    for circle in circles:
+        try:
+            x, y, r = map(int, circle)
+            cv2.circle(out, (x, y), r, circle_color, circle_thickness)
+        except Exception:
+            continue
+    return out
 
-    bg_edge_density = compute_background_edge_density(image, border_px=border_px)
-    hough = _hough_candidates(
-        image, min_radius=min_radius, max_radius=max_radius,
-        bg_edge_density=bg_edge_density,
-    )
-    filtered, edges = filter_false_positives(
-        image, hough, bg_edge_density=bg_edge_density,
-    ) if hough else ([], None)
-    nms    = non_maximum_suppression(filtered, overlap_thresh=0.4) if filtered else []
-    merged = _merge_by_arc_coverage(nms, edges) if (nms and edges is not None) else nms
-    merged = _remove_cluster_wrappers(merged, edges)
-    final  = _remove_nested_circles(merged, proximity_ratio=0.60) if merged else []
 
-    return {
-        "hough":           hough,
-        "filtered":        filtered,
-        "final":           final,
-        "bg_edge_density": bg_edge_density,
-    }
-"""
-detect.py — Coin Detection Pipeline
-
-Hough circle detection with adaptive parameter selection, a four-stage
-false-positive filter, and multi-step deduplication via NMS, arc-coverage
-merge, cluster-wrapper removal, and nested-circle removal.
-"""

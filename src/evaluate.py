@@ -141,8 +141,8 @@ def evaluate(test_images_dir: str, labels_path: str, model_path: str, scaler_pat
 
         try:
             # Fix dataset path naming
-            img_path = img_file.replace("archive\\", "archive data\\")
-            img_path = img_path.replace("archive/", "archive data/")
+            img_path = img_file.replace("archive\\", "data\\training\\")
+            img_path = img_path.replace("archive/", "data/training/")
             print(f"Evaluating {i + 1}/{len(image_files)} : {img_file}")
 
             # Run prediction

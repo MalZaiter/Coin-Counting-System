@@ -1,8 +1,33 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 *.egg-info/
-.DS_Store
-*.log
 .env
 venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Outputs and generated files
+outputs/predictions/
+outputs/evaluations/
+outputs/visualizations/
+tests/outputs/
+models/*.pkl
+*.jpg
+*.png
+.git/
