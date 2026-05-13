@@ -55,7 +55,7 @@ def print_classification_report(y_true: list, y_pred: list, labels: list) -> Non
 def plot_confusion_matrix(matrix: np.ndarray, labels: list, save_path: str = None) -> None:
     """
     Visualize the confusion matrix using matplotlib.
-    
+
     Args:
         matrix: 2D confusion matrix array
         labels: List of class labels
@@ -109,8 +109,8 @@ def evaluate(test_images_dir: str, labels_path: str, model_path: str, scaler_pat
         with open(labels_path, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                image_files.append(row.get('image') or row.get('filename'))
-                y_true.append(row.get('label') or row.get('class'))
+                image_files.append(row.get('image_path'))
+                y_true.append(row.get('coin_type'))
     except Exception:
         # Fallback: assume labels are in text files alongside images
         image_dir = Path(test_images_dir)
@@ -125,25 +125,49 @@ def evaluate(test_images_dir: str, labels_path: str, model_path: str, scaler_pat
 
     if not image_files or not y_true:
         raise ValueError(f"No images or labels found in {test_images_dir}")
+    # Remove duplicate image paths
+    unique_pairs = {}
 
-    # Run predictions
+    for img, label in zip(image_files, y_true):
+        if img not in unique_pairs:
+            unique_pairs[img] = label
+
+    image_files = list(unique_pairs.keys())
+    y_true = list(unique_pairs.values())
+#run predictions
     y_pred = []
+
     for i, img_file in enumerate(image_files):
+
         try:
-            img_path = os.path.join(test_images_dir, img_file) if not os.path.isabs(img_file) else img_file
-            result = predict(img_path, model_path, scaler_path)
-            # If multiple coins, pick the most common label; otherwise the only one
-            labels = result.get('labels', [])
+            # Fix dataset path naming
+            img_path = img_file.replace("archive\\", "archive data\\")
+            img_path = img_path.replace("archive/", "archive data/")
+            print(f"Evaluating {i + 1}/{len(image_files)} : {img_file}")
+
+            # Run prediction
+            result = predict(
+                img_path,
+                model_path,
+                scaler_path
+            )
+
+            # Extract predicted labels
+            labels = result.get("labels", [])
+
+            # Choose most common predicted label
             if labels:
                 from collections import Counter
-                most_common = Counter(labels).most_common(1)[0][0]
-                y_pred.append(most_common)
+
+                most_common_label = Counter(labels).most_common(1)[0][0]
+                y_pred.append(most_common_label)
+
             else:
-                y_pred.append('unknown')
+                y_pred.append("unknown")
+
         except Exception as e:
             print(f"Error predicting {img_file}: {e}")
-            y_pred.append('unknown')
-
+            y_pred.append("unknown")
     # Ensure same length
     min_len = min(len(y_true), len(y_pred))
     y_true = y_true[:min_len]

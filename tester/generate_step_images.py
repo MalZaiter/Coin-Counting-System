@@ -195,7 +195,7 @@ def main():
 
     if len(sys.argv) == 1:
         # No args — process every jpg in data/complex_tests/
-        search_dir = ROOT / "data" / "complex_tests"
+        search_dir = ROOT / "archive data" / "complex_tests"
         paths = sorted(search_dir.glob("*.jpg"))
         if not paths:
             sys.exit(f"No jpg files found in {search_dir}")

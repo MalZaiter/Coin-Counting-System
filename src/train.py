@@ -237,13 +237,11 @@ def train(labels_path: str, images_dir: str, model_type: str = "svm", test_size:
     print("\n" + "="*70)
     print("TRAINING COIN CLASSIFIER")
     print("="*70)
-    
     # Load data
     print("\nLoading data...")
     X, y = load_training_data(labels_path, images_dir)
     print(f"  Total samples: {len(X)}")
     print(f"  Classes: {np.unique(y)}")
-    
     # Split data
     print(f"\nSplitting data ({100*(1-test_size):.0f}% train, {100*test_size:.0f}% test)...")
     X_train, X_test, y_train, y_test = train_test_split(
@@ -251,12 +249,10 @@ def train(labels_path: str, images_dir: str, model_type: str = "svm", test_size:
     )
     print(f"  Train samples: {len(X_train)}")
     print(f"  Test samples: {len(X_test)}")
-    
     # Scale features
     print("\nScaling features...")
     X_train_scaled, scaler = normalize_features(X_train, scaler=None)
     X_test_scaled, _ = normalize_features(X_test, scaler=scaler)
-    
     # Train model
     print(f"\nTraining {model_type.upper()} classifier...")
     if model_type.lower() == "knn":
@@ -269,23 +265,19 @@ def train(labels_path: str, images_dir: str, model_type: str = "svm", test_size:
     # Evaluate
     print("\nEvaluating on test set...")
     y_pred = model.predict(X_test_scaled)
-    
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
     recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
     f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
-    
     print(f"  Accuracy:  {accuracy:.4f}")
     print(f"  Precision: {precision:.4f}")
     print(f"  Recall:    {recall:.4f}")
     print(f"  F1 Score:  {f1:.4f}")
-    
     # Save model
     print("\nSaving model...")
     save_model(model, scaler, "models/classifier.pkl", "models/scaler.pkl")
     print(f"  Model saved to: models/classifier.pkl")
     print(f"  Scaler saved to: models/scaler.pkl")
-    
     results = {
         "model_type": model_type,
         "train_samples": len(X_train),

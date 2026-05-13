@@ -37,31 +37,39 @@ def predict_coin(feature_vector: np.ndarray, model, scaler=None) -> str:
     Predict the coin type for a single feature vector.
 
     Returns:
-        Predicted label string (e.g., 'quarter', 'dime').
+        Predicted label string.
     """
+
     if feature_vector is None:
         return "unknown"
+
     fv = np.array(feature_vector)
+
     if fv.ndim == 1:
         fv = fv.reshape(1, -1)
+
+    # Scale features
     if scaler is not None:
         try:
             fv = scaler.transform(fv)
         except Exception:
             pass
-    # Reject low-confidence predictions when probabilities are available.
+
+    # Predict label
+    prediction = model.predict(fv)[0]
+
+    # Optional confidence check
     if hasattr(model, 'predict_proba'):
         try:
             proba = model.predict_proba(fv)
-            if proba is not None and len(proba) > 0:
-                max_conf = float(np.max(proba[0]))
-                if max_conf < 0.5:
-                    return "unknown"
+            max_conf = float(np.max(proba[0]))
+
+            print(f"Prediction confidence: {max_conf:.2f}")
+
         except Exception:
             pass
-    pred = model.predict(fv)
-    return str(pred[0])
 
+    return prediction
 
 def draw_results(image: np.ndarray, coins: list, labels: list) -> np.ndarray:
     """
@@ -141,28 +149,21 @@ def predict(image_path: str, model_path: str, scaler_path: str = None) -> dict:
     """
     # Load model
     model, scaler = load_model(model_path, scaler_path)
-
     # Read image (ensure BGR)
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f"Image not found: {image_path}")
-    
     # Ensure image is BGR (3 channels) for color feature extraction
     if len(image.shape) == 2:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-
     coins = []
     labels = []
-
     # Use project modules for preprocessing, detection, and feature extraction
     from src.preprocess import preprocess
     from src.detect import detect_coins
     from src.features import extract_features
-
-    img_proc = preprocess(image)
     # detect_coins performs its own preprocessing internally.
     coins = detect_coins(image)
-
     # Extract features from original image (not preprocessed)
     for c in coins:
         try:
@@ -178,7 +179,6 @@ def predict(image_path: str, model_path: str, scaler_path: str = None) -> dict:
     label_counts = count_coins(labels)
     total_value = compute_total_value(label_counts)
     annotated = draw_results(image, coins, labels)
-
     return {
         'annotated_image': annotated,
         'label_counts': label_counts,
