@@ -28,6 +28,4 @@ outputs/evaluations/
 outputs/visualizations/
 tests/outputs/
 models/*.pkl
-*.jpg
-*.png
 .git/
