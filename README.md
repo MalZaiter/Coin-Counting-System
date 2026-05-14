@@ -245,7 +245,7 @@ See `requirements.txt` for complete list.
 - Jana: Data collection & preprocessing
 - Salma: Detection pipeline & post-processing
 - Malak: Feature extraction
-- Nour 4: Training & classification
+- Nour: Training & classification
 
 ## Contact
 
